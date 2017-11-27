@@ -1,4 +1,4 @@
-maxIter = 500
+maxIter = 100
 
 
 def init_worker(C, D, num):
@@ -110,13 +110,16 @@ if __name__ == '__main__':
                 else:
                     for val, prob in probs.items():
                         b_var_prob[var][val] += prob
-            for var, probs in b_var_prob.items():
-                probability = np.exp(list(probs.values()))
-                val = np.random.choice(list(probs.keys()), p=probability / sum(probability))
-                B[var][0] = val
-                # print(B)
-                count[var][val] += 1
+
             for var, [val, _] in c_variables.items():
                 count[var][val] += 1
+
+        for var, probs in b_var_prob.items():
+            probability = np.exp(list(probs.values()))
+            val = np.random.choice(list(probs.keys()), p=probability / sum(probability))
+            B[var][0] = val
+            # print(B)
+            count[var][val] += 1
+
 
         print(count)
