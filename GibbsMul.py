@@ -1,4 +1,4 @@
-maxIter = 100
+maxIter = 10
 
 
 def init_worker(C, D, num):
@@ -60,7 +60,7 @@ def gibbs_worker(B, num):
 if __name__ == '__main__':
     import dispy
     import numpy as np
-
+    import time
     # input_variable : class | node | value | factor_id_list
     input_variable = {'B': {'a': [0, [1, 2, 3, 4]]},
                       'C1': {'b': [0, [1]],
@@ -73,14 +73,16 @@ if __name__ == '__main__':
                     'D2': {3: ['a', 'd', 'EQU', 0.9],
                            4: ['a', 'e', 'EQU', 0.9]}}
 
-    worker_map = {1: '127.0.0.1', 2: '127.0.0.1'}
+    worker_map = {'1': '127.0.0.1', '2': '127.0.0.1'}
 
     cluster_init_worker = dispy.JobCluster(init_worker, nodes=['127.0.0.1'], ip_addr='127.0.0.1', reentrant=True)
     cluster_gibbs_worker = dispy.JobCluster(gibbs_worker, nodes=['127.0.0.1'], ip_addr='127.0.0.1', reentrant=True)
+    time.sleep(2) #wait for dispy discover all workers
+
 
     for key, value in input_variable.items():
         if key[0] == 'C':
-            job = cluster_init_worker.submit(value, input_factor['D' + key[1]], key[1])
+            job = cluster_init_worker.submit_node(worker_map[key[1]], value, input_factor['D' + key[1]], key[1])
             n = job()
             print(n)
 
