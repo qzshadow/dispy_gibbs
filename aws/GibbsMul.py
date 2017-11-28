@@ -60,6 +60,7 @@ def gibbs_worker(B, num):
 if __name__ == '__main__':
     import dispy
     import numpy as np
+    import time
 
     # input_variable : class | node | value | factor_id_list
     input_variable = {'B': {'a': [0, [1, 2, 3, 4]]},
@@ -73,14 +74,15 @@ if __name__ == '__main__':
                     'D2': {3: ['a', 'd', 'EQU', 0.9],
                            4: ['a', 'e', 'EQU', 0.9]}}
 
-    worker_map = {1: '18.217.70.175', 2: '18.217.35.186'} 
+    worker_map = {"1": '18.217.70.175', "2": '18.217.35.186'}
 
     cluster_init_worker = dispy.JobCluster(init_worker, nodes=['18.217.70.175','18.217.35.186'], ext_ip_addr='18.221.159.28', reentrant=True)
     cluster_gibbs_worker = dispy.JobCluster(gibbs_worker, nodes=['18.217.70.175','18.217.35.186'], ext_ip_addr='18.221.159.28', reentrant=True)
+    time.sleep(2) # wait for all workers discovered by master
 
     for key, value in input_variable.items():
         if key[0] == 'C':
-            job = cluster_init_worker.submit(value, input_factor['D' + key[1]], key[1])
+            job = cluster_init_worker.submit_node(worker_map[key[1]], value, input_factor['D' + key[1]], key[1])
             n = job()
             print(n)
 
