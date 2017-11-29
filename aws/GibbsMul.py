@@ -76,8 +76,10 @@ if __name__ == '__main__':
 
     worker_map = {"1": '18.217.70.175', "2": '18.217.35.186'}
 
-    cluster_init_worker = dispy.JobCluster(init_worker, nodes=['18.217.70.175','18.217.35.186'], ext_ip_addr='18.221.159.28', reentrant=True)
-    cluster_gibbs_worker = dispy.JobCluster(gibbs_worker, nodes=['18.217.70.175','18.217.35.186'], ext_ip_addr='18.221.159.28', reentrant=True)
+    cluster_init_worker = dispy.JobCluster(init_worker, nodes=list(worker_map.values()),
+                                           ext_ip_addr='18.221.159.28', reentrant=True)
+    cluster_gibbs_worker = dispy.JobCluster(gibbs_worker, nodes=list(worker_map.values()),
+                                            ext_ip_addr='18.221.159.28', reentrant=True)
     time.sleep(2) # wait for all workers discovered by master
 
     for key, value in input_variable.items():
