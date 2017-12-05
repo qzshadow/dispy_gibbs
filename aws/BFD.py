@@ -1,8 +1,8 @@
-maxIter = 1
+maxIter = 1000
 localMode = True
-workerNum = 3
-masterVarNum = 5
-workerVarNum = 4
+workerNum = 2
+masterVarNum = 1
+workerVarNum = 2
 
 def init_worker(F, D, num):
     import pickle
@@ -20,12 +20,29 @@ def init_master(F):
 
 def gibbs_worker(B, num):
     import pickle
+    import numpy as np
     with open('/tmp/D{0}.pickle'.format(num), 'rb') as f:
-        D = pickle.load(f)
+        D = pickle.load(f) # type: dict
     with open('/tmp/F{0}.pickle'.format(num), 'rb') as f:
-        F = pickle.load(f)
+        F = pickle.load(f) # type: dict
+    for var, [val, factor_list] in D.items():
+        var_prob = {0:0, 1:0}
+        for factor_id in factor_list:
+            factor = F[factor_id]
+            other_var = factor[0] if var == factor[1] else factor[1]
+            other_var_val = B[other_var][0] #TODO optimization
+            for val in var_prob.keys():
+                if factor[2] == 'EQU':
+                    var_prob[val] += factor[3] if val == other_var_val else 0
+        probability = np.exp(list(var_prob.values()))
+        val = np.random.choice(list(var_prob.keys()), p = probability/sum(probability))
+        D[var][0] = val
 
-    return D, F
+    with open('/tmp/D{0}.pickle'.format(num), 'wb') as f:
+        pickle.dump(D, f)
+
+    return D
+
 
 if __name__ == '__main__':
     import dispy
@@ -49,27 +66,7 @@ if __name__ == '__main__':
             j + masterVarNum + (i - 1) * workerVarNum, k, 'EQU', 0.9
         ] for j in range(1, workerVarNum + 1) for k in range(1, masterVarNum + 1)
     } for i in range(1, workerNum + 1)}
-    # input_variable : class | node | value | factor_id_list
-    # input_variable = {
-    #     'B': {'f': [0, [5, 6, 9, 10]],
-    #           'g': [0, [7, 8, 11, 12]]},
-    #
-    #     'D1': {'h': [0, [5, 7]],
-    #            'i': [0, [6, 8]]},
-    #
-    #     'D2': {'j': [0, [9, 11]],
-    #            'k': [0, [10, 12]]}}
-    # input_factor : class | factor_id | [node1, node2, factor_type, weight]
-    # input_factor = {
-    #     'F3': {5: ['h', 'f', 'EQU', 0.9],
-    #            6: ['i', 'f', 'EQU', 0.9],
-    #            7: ['h', 'g', 'EQU', 0.9],
-    #            8: ['i', 'g', 'EQU', 0.9]},
-    #     'F4': {9: ['j', 'f', 'EQU', 0.9],
-    #            10: ['k', 'f', 'EQU', 0.9],
-    #            11: ['j', 'g', 'EQU', 0.9],
-    #            12: ['k', 'g', 'EQU', 0.9]},
-    # }
+
     if localMode:
         worker_map = {str(i):"127.0.0.1" for i in range(1, workerNum + 1)}
         master_ip = "127.0.0.1"
@@ -87,7 +84,7 @@ if __name__ == '__main__':
     time.sleep(2) # wait for all workers discovered by master
 
     # initialize master
-    factors = {}
+    F = {}
     B = input_variable['B']
     count = {}
     for type, node_info in input_variable.items():
@@ -97,7 +94,7 @@ if __name__ == '__main__':
     # initialize workers
     for key, value in input_factor.items():
         if key[0] == 'F':
-            factors.update(value)
+            F.update(value)
             job = cluster_init_worker.submit_node(worker_map[key[1:]], value, input_variable['D' + key[1:]], key[1:])
             n = job()
             print(n)
@@ -105,11 +102,33 @@ if __name__ == '__main__':
 
     for i in range(maxIter):
         gibbs_worker_jobs = []
+        D_variable = {}
         for num, node_ip in worker_map.items():
             job2 = cluster_gibbs_worker.submit_node(node_ip, B, num)
             gibbs_worker_jobs.append(job2)
 
+        # get all the variable assignment on workers
         for job2 in gibbs_worker_jobs:
-            D, F = job2()
-            print(D, F)
+            D = job2()
+            D_variable.update(D)
 
+        # run gibbs sampling on master
+        for var, [val, factor_list] in B.items():
+            var_prob = {0:1, 1:0}
+            for factor_id in factor_list:
+                factor = F[factor_id]
+                other_var = factor[0] if var == factor[1] else factor[1]
+                other_var_val = D_variable[other_var][0]
+                for val in var_prob.keys():
+                    if factor[2] == 'EQU':
+                        var_prob[val] += factor[3] if val == other_var_val else 0
+                probability = np.exp(list(var_prob.values()))
+                val = np.random.choice(list(var_prob.keys()), p = probability/sum(probability))
+                B[var][0] = val
+
+        # statistic
+        for var, [val, factor_list] in B.items():
+            count[var][val] += 1
+        for var, [val, factor_list] in D_variable.items():
+            count[var][val] += 1
+        print(count)
