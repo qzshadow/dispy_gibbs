@@ -4,11 +4,13 @@ workerNum = 3
 masterVarNum = 5
 workerVarNum = 4
 
-def init_worker(F, num):
+def init_worker(F, D, num):
     import pickle
     with open('/tmp/F{0}.pickle'.format(num), 'wb') as f:
         pickle.dump(F, f)
-    return "F successfully initialized on worker " + num
+    with open('/tmp/D{0}.pickle'.format(num), 'wb') as f:
+        pickle.dump(D, f)
+    return "D and F successfully initialized on worker " + num
 
 def init_master(F):
     import pickle
@@ -16,7 +18,9 @@ def init_master(F):
         pickle.dump(F, f)
     return "F successfully initialized on master", F
 
-def gibbs_worker():
+def gibbs_worker(B, num):
+    import pickle
+    # with open('/tmp/')
     return
 
 if __name__ == '__main__':
@@ -80,12 +84,26 @@ if __name__ == '__main__':
 
     # initialize master
     factors = {}
+    B = input_variable['B']
+    count = {}
+    for type, node_info in input_variable.items():
+        for var, _ in node_info.items():
+            count[var] = {0:0, 1:0}
+
     # initialize workers
     for key, value in input_factor.items():
         if key[0] == 'F':
             factors.update(value)
-            job = cluster_init_worker.submit_node(worker_map[key[1:]], value, key[1:])
+            job = cluster_init_worker.submit_node(worker_map[key[1:]], value, input_variable['D' + key[1:]], key[1:])
             n = job()
             print(n)
 
+
+    # for i in range(maxIter):
+    #     gibbs_worker_jobs = []
+    #     for num, node_ip in worker_map.items():
+    #         job2 = cluster_gibbs_worker.submit_node(node_ip, B, num)
+    #         gibbs_worker_jobs.append(job2)
+    #
+    #     for job2 in gibbs_worker_jobs:
 
