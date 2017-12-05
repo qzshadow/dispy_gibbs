@@ -3,6 +3,7 @@ localMode = True
 workerNum = 5
 workerVarNum = 4
 
+
 def init_worker(C, D, num):
     import pickle
     with open('/tmp/C{0}.pickle'.format(num), 'wb') as f:
@@ -64,12 +65,13 @@ if __name__ == '__main__':
     import dispy
     import numpy as np
     import time
-    input_variable = {'B' : {0 : [1, [i for i in range (1, workerNum * workerVarNum + 1)]]}}
-    input_variable.update({'C' + str(i):{(i-1) * workerVarNum + j: [0, [(i-1) * workerVarNum + j]]
-                                         for j in range(1, workerVarNum + 1)} for i in range(1, workerNum + 1)})
 
-    input_factor = {'D' + str(i) : {
-        j:[0, j, 'EQU', 0.9] for j in range((i-1) * workerVarNum + 1, i* workerVarNum + 1)
+    input_variable = {'B': {0: [1, [i for i in range(1, workerNum * workerVarNum + 1)]]}}
+    input_variable.update({'C' + str(i): {(i - 1) * workerVarNum + j: [0, [(i - 1) * workerVarNum + j]]
+                                          for j in range(1, workerVarNum + 1)} for i in range(1, workerNum + 1)})
+
+    input_factor = {'D' + str(i): {
+        j: [0, j, 'EQU', 0.9] for j in range((i - 1) * workerVarNum + 1, i * workerVarNum + 1)
     } for i in range(1, workerNum + 1)}
 
     # input_variable : class | node | value | factor_id_list
@@ -85,12 +87,12 @@ if __name__ == '__main__':
     #                        4: ['a', 'e', 'EQU', 0.9]}}
 
     if localMode:
-        worker_map = {str(i):"127.0.0.1" for i in range(1, workerNum + 1)}
+        worker_map = {str(i): "127.0.0.1" for i in range(1, workerNum + 1)}
         master_ip = "127.0.0.1"
         cluster_init_worker = dispy.JobCluster(init_worker, nodes=list(set(worker_map.values())),
                                                ip_addr=master_ip, reentrant=True)
         cluster_gibbs_worker = dispy.JobCluster(gibbs_worker, nodes=list(set(worker_map.values())),
-                                               ip_addr=master_ip, reentrant=True)
+                                                ip_addr=master_ip, reentrant=True)
     else:
         worker_map = {"1": '18.217.70.175', "2": '18.217.35.186'}
 
@@ -98,7 +100,7 @@ if __name__ == '__main__':
                                                ext_ip_addr='18.221.159.28', reentrant=True)
         cluster_gibbs_worker = dispy.JobCluster(gibbs_worker, nodes=list(worker_map.values()),
                                                 ext_ip_addr='18.221.159.28', reentrant=True)
-    time.sleep(2) # wait for all workers discovered by master
+    time.sleep(2)  # wait for all workers discovered by master
 
     for key, value in input_variable.items():
         if key[0] == 'C':
@@ -110,7 +112,7 @@ if __name__ == '__main__':
     count = {}
     for type, node_info in input_variable.items():
         for var, _ in node_info.items():
-            count[var] = {0:0, 1:0}
+            count[var] = {0: 0, 1: 0}
 
     for i in range(maxIter):
         gibbs_worker_jobs = []
