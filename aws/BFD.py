@@ -1,4 +1,4 @@
-maxIter = 10
+maxIter = 1
 localMode = True
 workerNum = 3
 masterVarNum = 5
@@ -20,8 +20,12 @@ def init_master(F):
 
 def gibbs_worker(B, num):
     import pickle
-    # with open('/tmp/')
-    return
+    with open('/tmp/D{0}.pickle'.format(num), 'rb') as f:
+        D = pickle.load(f)
+    with open('/tmp/F{0}.pickle'.format(num), 'rb') as f:
+        F = pickle.load(f)
+
+    return D, F
 
 if __name__ == '__main__':
     import dispy
@@ -99,11 +103,13 @@ if __name__ == '__main__':
             print(n)
 
 
-    # for i in range(maxIter):
-    #     gibbs_worker_jobs = []
-    #     for num, node_ip in worker_map.items():
-    #         job2 = cluster_gibbs_worker.submit_node(node_ip, B, num)
-    #         gibbs_worker_jobs.append(job2)
-    #
-    #     for job2 in gibbs_worker_jobs:
+    for i in range(maxIter):
+        gibbs_worker_jobs = []
+        for num, node_ip in worker_map.items():
+            job2 = cluster_gibbs_worker.submit_node(node_ip, B, num)
+            gibbs_worker_jobs.append(job2)
+
+        for job2 in gibbs_worker_jobs:
+            D, F = job2()
+            print(D, F)
 
