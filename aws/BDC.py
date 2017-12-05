@@ -1,6 +1,7 @@
-maxIter = 100
+maxIter = 10
 localMode = True
-workerNum = 2
+workerNum = 1
+workerVarNum = 80000
 
 def init_worker(C, D, num):
     import pickle
@@ -62,18 +63,25 @@ if __name__ == '__main__':
     import dispy
     import numpy as np
     import time
+    input_variable = {'B' : {0 : [1, [i for i in range (1, workerNum * workerVarNum + 1)]]}}
+    input_variable.update({'C' + str(i):{(i-1) * workerVarNum + j: [0, [(i-1) * workerVarNum + j]]
+                                         for j in range(1, workerVarNum + 1)} for i in range(1, workerNum + 1)})
+
+    input_factor = {'D' + str(i) : {
+        j:[0, j, 'EQU', 0.9] for j in range((i-1) * workerVarNum + 1, i* workerVarNum + 1)
+    } for i in range(1, workerNum + 1)}
 
     # input_variable : class | node | value | factor_id_list
-    input_variable = {'B': {'a': [0, [1, 2, 3, 4]]},
-                      'C1': {'b': [0, [1]],
-                             'c': [0, [2]]},
-                      'C2': {'d': [0, [3]],
-                             'e': [0, [4]]}}
+    # input_variable = {'B': {'a': [0, [1, 2, 3, 4]]},
+    #                   'C1': {'b': [0, [1]],
+    #                          'c': [0, [2]]},
+    #                   'C2': {'d': [0, [3]],
+    #                          'e': [0, [4]]}}
     # input_factor : class | factor_id | [node1, node2, factor_type, weight]
-    input_factor = {'D1': {1: ['a', 'b', 'EQU', 0.9],
-                           2: ['a', 'c', 'EQU', 0.9]},
-                    'D2': {3: ['a', 'd', 'EQU', 0.9],
-                           4: ['a', 'e', 'EQU', 0.9]}}
+    # input_factor = {'D1': {1: ['a', 'b', 'EQU', 0.9],
+    #                        2: ['a', 'c', 'EQU', 0.9]},
+    #                 'D2': {3: ['a', 'd', 'EQU', 0.9],
+    #                        4: ['a', 'e', 'EQU', 0.9]}}
 
     if localMode:
         worker_map = {str(i):"127.0.0.1" for i in range(1, workerNum + 1)}
@@ -93,7 +101,7 @@ if __name__ == '__main__':
 
     for key, value in input_variable.items():
         if key[0] == 'C':
-            job = cluster_init_worker.submit_node(worker_map[key[1]], value, input_factor['D' + key[1]], key[1])
+            job = cluster_init_worker.submit_node(worker_map[key[1:]], value, input_factor['D' + key[1:]], key[1:])
             n = job()
             print(n)
 
@@ -116,7 +124,7 @@ if __name__ == '__main__':
         for job2 in gibbs_worker_jobs:
             part_b_var_prob, c_variables = job2()
             # print(part_b_var_prob, c_variables)
-            # print(b_var_prob)
+
             for var, probs in part_b_var_prob.items():
                 if var not in b_var_prob.keys():
                     b_var_prob[var] = probs
@@ -125,6 +133,7 @@ if __name__ == '__main__':
                         b_var_prob[var][val] += prob
             for var, [val, _] in c_variables.items():
                 count[var][val] += 1
+            # print(b_var_prob)
         for var, probs in b_var_prob.items():
             probability = np.exp(list(probs.values()))
             val = np.random.choice(list(probs.keys()), p=probability / sum(probability))
