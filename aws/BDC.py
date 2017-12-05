@@ -1,7 +1,7 @@
-maxIter = 10
+maxIter = 500
 localMode = True
-workerNum = 1
-workerVarNum = 80000
+workerNum = 5
+workerVarNum = 4
 
 def init_worker(C, D, num):
     import pickle
@@ -29,8 +29,9 @@ def gibbs_worker(B, num):
         variables = pickle.load(f)
     with open('/tmp/D{0}.pickle'.format(num), 'rb') as f:
         factors = pickle.load(f)
-    c_var_prob = {0: 0, 1: 0}
+    # c_var_prob = {0: 0, 1: 0}
     for var, [val, factor_list] in variables.items():
+        c_var_prob = {0: 0, 1: 0}
         for factor_id in factor_list:
             factor = factors[factor_id]
             other_var = factor[0] if var == factor[1] else factor[1]
