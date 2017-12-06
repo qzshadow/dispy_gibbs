@@ -1,0 +1,5 @@
+2017-12-06 04:28:25 pycos - version 4.6.5 with epoll I/O notifier
+2017-12-06 04:28:25 dispy - dispy client version: 4.8.3
+2017-12-06 04:28:25 dispy - Storing fault recovery information in "_dispy_20171206042825"
+D and F successfully initialized on worker 1
+2017-12-06 05:10:31 dispy - Cluster init_worker already closed?

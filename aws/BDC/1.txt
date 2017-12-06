@@ -1,0 +1,13 @@
+2017-12-06 03:19:05 pycos - version 4.6.5 with epoll I/O notifier
+2017-12-06 03:19:05 dispy - dispy client version: 4.8.3
+2017-12-06 03:19:05 dispy - Storing fault recovery information in "_dispy_20171206031905"
+18.217.208.146 {'1': '18.221.239.41'}
+C and D initialized successfully on worker1
+
+                           Node |  CPUs |    Jobs |    Sec/Job | Node Time Sec
+------------------------------------------------------------------------------
+ 18.221.239.41 (ip-172-31-30-24 |     1 |    1000 |      0.291 |       290.785
+
+Total job time: 290.785 sec, wall time: 306.270 sec, speedup: 0.949
+
+2017-12-06 03:24:11 dispy - Cluster init_worker already closed?

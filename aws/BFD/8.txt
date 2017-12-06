@@ -1,0 +1,38 @@
+2017-12-06 03:51:29 pycos - version 4.6.5 with epoll I/O notifier
+2017-12-06 03:51:29 dispy - dispy client version: 4.8.3
+2017-12-06 03:51:29 dispy - Storing fault recovery information in "_dispy_20171206035129"
+D and F successfully initialized on worker 7
+D and F successfully initialized on worker 2
+D and F successfully initialized on worker 6
+D and F successfully initialized on worker 8
+D and F successfully initialized on worker 1
+D and F successfully initialized on worker 3
+D and F successfully initialized on worker 4
+D and F successfully initialized on worker 5
+2017-12-06 03:52:53 dispy - Cluster init_worker already closed?
+2017-12-06 03:53:02 pycos - version 4.6.5 with epoll I/O notifier
+2017-12-06 03:53:02 dispy - dispy client version: 4.8.3
+2017-12-06 03:53:02 dispy - Storing fault recovery information in "_dispy_20171206035302"
+D and F successfully initialized on worker 1
+D and F successfully initialized on worker 6
+D and F successfully initialized on worker 8
+D and F successfully initialized on worker 5
+D and F successfully initialized on worker 7
+D and F successfully initialized on worker 3
+D and F successfully initialized on worker 2
+D and F successfully initialized on worker 4
+
+                           Node |  CPUs |    Jobs |    Sec/Job | Node Time Sec
+------------------------------------------------------------------------------
+ 18.217.202.75 (ip-172-31-16-11 |     1 |     100 |      0.070 |         7.022
+ 18.217.166.13 (ip-172-31-26-22 |     1 |     100 |      0.069 |         6.935
+ 18.221.239.41 (ip-172-31-30-24 |     1 |     100 |      0.073 |         7.316
+ 18.217.203.10 (ip-172-31-26-82 |     1 |     100 |      0.069 |         6.904
+ 18.217.164.232 (ip-172-31-18-9 |     1 |     100 |      0.067 |         6.730
+ 18.217.126.199 (ip-172-31-20-2 |     1 |     100 |      0.068 |         6.760
+ 18.217.185.209 (ip-172-31-30-2 |     1 |     100 |      0.075 |         7.534
+ 18.221.201.12 (ip-172-31-30-15 |     1 |     100 |      0.067 |         6.697
+
+Total job time: 55.899 sec, wall time: 123.166 sec, speedup: 0.454
+
+2017-12-06 03:55:05 dispy - Cluster init_worker already closed?
