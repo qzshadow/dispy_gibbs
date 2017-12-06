@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("workerNum", type=int)
-    parser.add_argument("workerVarNum", type =int)
+    parser.add_argument("workerVarNum", type=int)
     parser.add_argument("maxIter", type=int)
     parser.add_argument("localMode", type=int)
     args = parser.parse_args()
@@ -87,18 +87,6 @@ if __name__ == '__main__':
         j: [0, j, 'EQU', 0.9] for j in range((i - 1) * workerVarNum + 1, i * workerVarNum + 1)
     } for i in range(1, workerNum + 1)}
 
-    # input_variable : class | node | value | factor_id_list
-    # input_variable = {'B': {'a': [0, [1, 2, 3, 4]]},
-    #                   'C1': {'b': [0, [1]],
-    #                          'c': [0, [2]]},
-    #                   'C2': {'d': [0, [3]],
-    #                          'e': [0, [4]]}}
-    # input_factor : class | factor_id | [node1, node2, factor_type, weight]
-    # input_factor = {'D1': {1: ['a', 'b', 'EQU', 0.9],
-    #                        2: ['a', 'c', 'EQU', 0.9]},
-    #                 'D2': {3: ['a', 'd', 'EQU', 0.9],
-    #                        4: ['a', 'e', 'EQU', 0.9]}}
-
     if localMode:
         worker_map = {str(i): "127.0.0.1" for i in range(1, workerNum + 1)}
         master_ip = "127.0.0.1"
@@ -106,6 +94,10 @@ if __name__ == '__main__':
                                                ip_addr=master_ip, reentrant=True)
         cluster_gibbs_worker = dispy.JobCluster(gibbs_worker, nodes=list(set(worker_map.values())),
                                                 ip_addr=master_ip, reentrant=True)
+        count = {}
+        for type, node_info in input_variable.items():
+            for var, _ in node_info.items():
+                count[var] = {0: 0, 1: 0}
     else:
         worker_map = {}
         with open("master_ip.conf", 'r') as f:
@@ -130,10 +122,6 @@ if __name__ == '__main__':
             print(n)
 
     B = input_variable['B']
-    count = {}
-    for type, node_info in input_variable.items():
-        for var, _ in node_info.items():
-            count[var] = {0: 0, 1: 0}
 
     for i in range(maxIter):
         gibbs_worker_jobs = []
@@ -155,16 +143,17 @@ if __name__ == '__main__':
                 else:
                     for val, prob in probs.items():
                         b_var_prob[var][val] += prob
-            for var, [val, _] in c_variables.items():
-                count[var][val] += 1
+            if localMode:
+                for var, [val, _] in c_variables.items():
+                    count[var][val] += 1
             # print(b_var_prob)
         for var, probs in b_var_prob.items():
             probability = np.exp(list(probs.values()))
             val = np.random.choice(list(probs.keys()), p=probability / sum(probability))
             B[var][0] = val
             # print(B)
-            count[var][val] += 1
+            if localMode: count[var][val] += 1
 
-        print(count)
+        if localMode: print(count)
 
     cluster_gibbs_worker.print_status()

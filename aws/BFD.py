@@ -111,10 +111,11 @@ if __name__ == '__main__':
     # initialize master
     F = {}
     B = input_variable['B']
-    count = {}
-    for type, node_info in input_variable.items():
-        for var, _ in node_info.items():
-            count[var] = {0: 0, 1: 0}
+    if localMode:
+        count = {}
+        for type, node_info in input_variable.items():
+            for var, _ in node_info.items():
+                count[var] = {0: 0, 1: 0}
 
     # initialize workers
     for key, value in input_factor.items():
@@ -151,8 +152,10 @@ if __name__ == '__main__':
                 B[var][0] = val
 
         # statistic
-        for var, [val, factor_list] in B.items():
-            count[var][val] += 1
-        for var, [val, factor_list] in D_variable.items():
-            count[var][val] += 1
-        print(count)
+        if localMode:
+            for var, [val, factor_list] in B.items():
+                count[var][val] += 1
+            for var, [val, factor_list] in D_variable.items():
+                count[var][val] += 1
+            print(count)
+    cluster_gibbs_worker.print_status()
