@@ -113,7 +113,7 @@ if __name__ == '__main__':
                                                ext_ip_addr=master_ip, reentrant=True)
         cluster_gibbs_worker = dispy.JobCluster(gibbs_worker, nodes=list(worker_map.values()),
                                                 ext_ip_addr=master_ip, reentrant=True)
-    time.sleep(2)  # wait for all workers discovered by master
+    time.sleep(10)  # wait for all workers discovered by master
 
     for key, value in input_variable.items():
         if key[0] == 'C':
