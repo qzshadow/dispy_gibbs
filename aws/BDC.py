@@ -1,7 +1,7 @@
-maxIter = 500
-localMode = True
-workerNum = 5
-workerVarNum = 4
+# maxIter = 10
+# localMode = True
+# workerNum = 5
+# workerVarNum = 4
 
 
 def init_worker(C, D, num):
@@ -62,9 +62,22 @@ def gibbs_worker(B, num):
 
 
 if __name__ == '__main__':
+    import argparse
     import dispy
     import numpy as np
     import time
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("workerNum", type=int)
+    parser.add_argument("workerVarNum", type =int)
+    parser.add_argument("maxIter", type=int)
+    parser.add_argument("localMode", type=int)
+    args = parser.parse_args()
+
+    workerNum = args.workerNum
+    workerVarNum = args.workerVarNum
+    localMode = args.localMode
+    maxIter = args.maxIter
 
     input_variable = {'B': {0: [1, [i for i in range(1, workerNum * workerVarNum + 1)]]}}
     input_variable.update({'C' + str(i): {(i - 1) * workerVarNum + j: [0, [(i - 1) * workerVarNum + j]]
@@ -94,12 +107,20 @@ if __name__ == '__main__':
         cluster_gibbs_worker = dispy.JobCluster(gibbs_worker, nodes=list(set(worker_map.values())),
                                                 ip_addr=master_ip, reentrant=True)
     else:
-        worker_map = {"1": '18.217.70.175', "2": '18.217.35.186'}
+        worker_map = {}
+        with open("master_ip.conf", 'r') as f:
+            master_ip = f.readline()
+        with open("worker_ips.conf", 'r') as f:
+            for idx, line in enumerate(f.readlines()):
+                if idx >= workerNum: break
+                worker_map[str(idx + 1)] = line.strip()
+
+        # worker_map = {"1": '18.217.70.175', "2": '18.217.35.186'}
 
         cluster_init_worker = dispy.JobCluster(init_worker, nodes=list(worker_map.values()),
-                                               ext_ip_addr='18.221.159.28', reentrant=True)
+                                               ext_ip_addr=master_ip, reentrant=True)
         cluster_gibbs_worker = dispy.JobCluster(gibbs_worker, nodes=list(worker_map.values()),
-                                                ext_ip_addr='18.221.159.28', reentrant=True)
+                                                ext_ip_addr=master_ip, reentrant=True)
     time.sleep(2)  # wait for all workers discovered by master
 
     for key, value in input_variable.items():
@@ -145,3 +166,5 @@ if __name__ == '__main__':
             count[var][val] += 1
 
         print(count)
+
+    cluster_gibbs_worker.print_status()
