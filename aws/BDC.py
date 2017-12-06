@@ -116,6 +116,7 @@ if __name__ == '__main__':
     time.sleep(2)  # wait for all workers discovered by master
 
     print(master_ip, worker_map)
+
     for key, value in input_variable.items():
         if key[0] == 'C':
             job = cluster_init_worker.submit_node(worker_map[key[1:]], value, input_factor['D' + key[1:]], key[1:])
